@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "DTypes.h"
 #include "Bit_Invert.h"
 
 int						eof_val;
@@ -10,19 +9,22 @@ unsigned long int		total_bytes_s;
 fpos_t					prev_pos;
 fpos_t					first_pos;
 
-void changeval(UCHAR *loc);
 
 
-inline void position(FILE *f, const UINT *f_size) {
-	first_pos = *f_size / 4;
+void position(FILE *f, const unsigned int *fileSize) {
+	
+	first_pos = *fileSize / 4;
 	fsetpos(f, &first_pos);
 	
-/*	printf("Size %d, size/4 = %d\n", *f_size, first_pos);*/
+/*	printf("Size %d, size/4 = %d\n", *fileSize, first_pos);*/
+	return;
 }
 
-int invert_bit(UCHAR *buffer, UINT buf_size, FILE *f, STAT *st) {
+
+
+int invert_bit(char *buffer, unsigned int bufileSize, FILE *f, STAT *st) {
 	
-	register UINT j;
+	register unsigned int j;
 	eof_val = 0;
 	prev_pos = 0;
 	read_count = 0;
@@ -32,7 +34,7 @@ int invert_bit(UCHAR *buffer, UINT buf_size, FILE *f, STAT *st) {
 /*	while(!eof_val) {*/
 	while (!eof_val) {
 		
-		read_count = fread(buffer, 1, buf_size, f);
+		read_count = fread(buffer, 1, bufileSize, f);
 		
 		eof_val = feof(f);
 /*		printf("\treads %d, end-of-file %d\n", read_count, eof_val);*/
@@ -45,33 +47,25 @@ int invert_bit(UCHAR *buffer, UINT buf_size, FILE *f, STAT *st) {
 /*		printf("\tnew pos %d\n", prev_pos);*/
 		
 		for (j=0; j < read_count; j++) {
-			changeval(buffer + j);
+			*(buffer + j) = ~(*(buffer + j));
 		}
 		fwrite(buffer, 1, read_count, f);
 		fflush(f);
 		
-		st->t_size_processed += read_count;
+		st->byteProcessed += read_count;
 	}
 	
 	return 0;
 }
 
-inline void changeval(UCHAR *loc) {
-	*loc = ~(*loc);
+
+unsigned int stat_countFailedFiles(STAT *st) {
+	return st->totalFiles - st->processedFiles;
 }
 
-void stat_init(STAT *st) {
-	st->no_files = 0;
-	st->no_processed_files = 0;
-	st->t_size_processed = 0;
-	st->t_size_encountered = 0;
-}
+unsigned int stat_percentageFailedFiles(STAT *st) {
 
-void stat_files_failed_n(STAT *st, UINT *out) {
-	*out = st->no_files - st->no_processed_files;
-}
-
-void stat_files_failed_p(STAT*st, UINT *out) {
-	stat_files_failed_n(st, out);
-	*out = (UINT) ((double)*out/ (double)st->no_files * 100);
+	unsigned int returnValue;
+	returnValue = stat_countFailedFiles(st);
+	return (unsigned int) ((double) returnValue/ (double)st->totalFiles * 100);
 }

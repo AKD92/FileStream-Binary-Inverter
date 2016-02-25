@@ -1,8 +1,6 @@
 #ifndef FBI_H
 #define FBI_H
 
-#include "DTypes.h"
-
 #define ERROR_READ 2
 #define ERROR_WRITE 3
 #define ERROR_OTHER 1
@@ -10,20 +8,19 @@
 
 
 struct stat_ {
-	UINT no_files;
-	UINT no_processed_files;
-	UINT_L t_size_processed;
-	UINT_L t_size_encountered;
+	unsigned int totalFiles;
+	unsigned int processedFiles;
+	unsigned long long int byteProcessed;
+	unsigned long long int byteEncountered;
 };
 
 typedef struct stat_ STAT;
 
-void position(FILE* , const UINT* );
-int invert_bit(UCHAR* , UINT , FILE* , STAT*);
+void position(FILE* , const unsigned int* );
+int invert_bit(char *buffer, unsigned int buf_size, FILE *f, STAT *statProgress);
 
-void stat_init(STAT*);
-void stat_files_failed_n(STAT*, UINT*);
-void stat_files_failed_p(STAT*, UINT*);
+unsigned int stat_countFailedFiles(STAT *statProgress);
+unsigned int stat_percentageFailedFiles(STAT *statProgress);
 
 
 #endif

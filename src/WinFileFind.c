@@ -1,167 +1,175 @@
 
-#include <windows.h>
+
+
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <windows.h>
 #include "WinFileFind.h"
+
+
 
 #define S_DOT "."
 #define D_DOT ".."
 
 
-UINT file_size(WIN32_FIND_DATA *f_data);
 
-int search_files_file(const char *sFile, Queue *file_queue);
-int search_files_dir(const char *sDir, Queue *file_queue);
+static void util_freeFileData(void *fData);
 
-int append_file_info(const char *sFile, const UINT *fSize, const UINT *fattr, Queue *file_queue);
+int file_buildFileList(const char *strDirectoryPath, List **outFileList);
+
+static int file_extractFromDirectory(const char *strDirectoryPath, List *fileList);
+
+static int file_createFileData(const char *strFilePath, FileData **outFileData);
 
 
-int search_files(const char *objLoc, Queue *file_queue) {
+
+
+
+static void util_freeFileData(void *fData) {
 	
-	DWORD attr;
+	FileData *data;
+	data = (FileData *) fData;
+	free(data->strFilePath);
+	free(fData);
 	
-	attr = GetFileAttributes(objLoc);
-	
-	if (attr == INVALID_FILE_ATTRIBUTES) return -1;
-	
-	if (attr & FILE_ATTRIBUTE_DIRECTORY) {
-		return search_files_dir(objLoc, file_queue);
-	} else {
-		return search_files_file(objLoc, file_queue);
-	}
+	return;
 }
 
-int search_files_file(const char *sFile, Queue *file_queue) {
+
+
+int file_isFileWritable(unsigned int fileAttribute) {
 	
-	DWORD hFile;
-	DWORD fSize;
-	DWORD fAttr;
-	int res;
+/*	static unsigned int i, j;*/
 	
-	hFile = CreateFile(sFile, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile == INVALID_HANDLE_VALUE) return -1;
+/*	i = *fileAttribute & FILE_ATTRIBUTE_SYSTEM;*/
+/*	j = *fileAttribute & FILE_ATTRIBUTE_READONLY;*/
 	
+/*	*returnValue = i | j ;*/
+
+	unsigned int attrbForbidden;
+	int isWritable;
+	
+	attrbForbidden = (unsigned int) (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM);
+	isWritable = (fileAttribute & attrbForbidden) == 0 ? 0 : 1;
+	
+	return isWritable;
+}
+
+
+int file_buildFileList(const char *strDirectoryPath, List **outFileList) {
+	
+	List *fileList;
+	ListElem *elem;
+	FileData *fileData;
+	DWORD fileAttribute;
+	DWORD isDirectory;
+	int returnValue;
+	
+	fileAttribute = GetFileAttributes(strDirectoryPath);
+	
+	if (fileAttribute == INVALID_FILE_ATTRIBUTES) {
+		returnValue = -1;
+	}
 	else {
+		fileList = (List *) malloc(sizeof(List));
+		list_init(fileList, util_freeFileData);
 		
-		fSize = GetFileSize(hFile, NULL);
-		CloseHandle(hFile);
-		fAttr = GetFileAttributes(sFile);
+		isDirectory = fileAttribute & FILE_ATTRIBUTE_DIRECTORY;
+		if (isDirectory != 0) {
+			returnValue = file_extractFromDirectory(strDirectoryPath, fileList);
+		} else {
+			file_createFileData(strDirectoryPath, &fileData);
+			elem = list_tail(fileList);
+			list_ins_next(fileList, elem, (const void *) fileData);
+			returnValue = 0;
+		}
 		
-		res = append_file_info(sFile, (UINT*)&fSize, (UINT*)&fAttr, file_queue);
-		return res;
+		*outFileList = fileList;
 	}
+	
+	return returnValue;
 }
 
-int search_files_dir(const char *sDir, Queue *file_queue) {
+
+
+static int file_extractFromDirectory(const char *strDirectoryPath, List *fileList) {
 	
-	WIN32_FIND_DATA fdFile;
-	HANDLE hFind;
+	ListElem *elem;
+	char tempPathBuffer[2048];
+	HANDLE handleFile;
+	WIN32_FIND_DATA fileFindData;
+	FileData *fileData;
+	int valNextFile, fileCount;
 	
-	char sPath[2048];
-	UINT fSize;	
-	
-	int valNextFile = 0;
-	int file_count = 0;
-	
-	DWORD qual_val = 0;
+	valNextFile = 0;
+	fileCount = 0;
 	
 /*	Specify a file mask. *.* = We want everything!*/
-	sprintf(sPath, MAKE_PATH_MASK, sDir);
+	sprintf(tempPathBuffer, MAKE_PATH_MASK, strDirectoryPath);
+	handleFile = FindFirstFile(tempPathBuffer, &fileFindData);
 	
-	hFind = FindFirstFile(sPath, &fdFile);
-	
-	if(hFind == INVALID_HANDLE_VALUE)
-	{
+	if(handleFile == INVALID_HANDLE_VALUE) {
 		return -1;
-	} else {
+	}
+	else {
 		
 		do {
-			if(strcmp(fdFile.cFileName, S_DOT)
-				&& strcmp(fdFile.cFileName, D_DOT)) {
+			if(strcmp(fileFindData.cFileName, S_DOT)
+				&& strcmp(fileFindData.cFileName, D_DOT)) {
+				
+				sprintf(tempPathBuffer, MAKE_PATH_ABSOLUTE, strDirectoryPath, fileFindData.cFileName);
+				
+				if (fileFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+					file_extractFromDirectory((const char *) tempPathBuffer, fileList);
 					
-					sprintf(sPath, MAKE_PATH_ABSOLUTE, sDir, fdFile.cFileName);
-					
-					if (fdFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-/*						printf(PRNT_DIR, sPath);*/
-						search_files_dir(sPath, file_queue);
-					} else {
+				} else {
 						
-/*						isQualified(&(fdFile.dwFileAttributes), &qual_val);*/
-/*						if (!qual_val) {*/
-							
-/*							printf(PRNT_FILE, sPath);*/
-							
-							fSize = file_size(&fdFile);
-							append_file_info(sPath, &fSize, &fdFile.dwFileAttributes, file_queue);
-							
-							file_count++;
-/*						}*/
-					}
+					file_createFileData(tempPathBuffer, &fileData);
+					elem = list_tail(fileList);
+					list_ins_next(fileList, elem, (const void *) fileData);
+					fileCount++;
 				}
-			valNextFile = FindNextFile(hFind, &fdFile);
+			}
+			valNextFile = FindNextFile(handleFile, &fileFindData);
 			
-		} while (valNextFile);
+		} while (valNextFile != 0);
 	}
-	FindClose(hFind);
-	return file_count;
+	
+	FindClose(handleFile);
+	return fileCount;
 }
 
-inline int append_file_info(const char *sFile, const UINT *fSize, const UINT *fattr, Queue *file_queue)
-{
-	UINT size_total;
+static int file_createFileData(const char *strFilePath, FileData **outFileData) {
 	
-	void *alloc_mem;
-	UCHAR *f_name_loc;
-	UINT *f_size_loc;
-	UINT *f_attr_loc;
+	DWORD * handleFile;
+	DWORD fileSize;
+	DWORD fileAttribute;
+	FileData *fileData;
+	char *pFileFullPath;
 	
-	size_total = (2 * sizeof(UINT)) + strlen(sFile) + 1;
-	alloc_mem = malloc(size_total);
-	if (alloc_mem == NULL) return -1;
-	
-	loc_file_size(alloc_mem, &f_size_loc);
-	loc_file_attr(alloc_mem, &f_attr_loc);
-	loc_file_name(alloc_mem, &f_name_loc);
-	
-	*f_size_loc = *fSize;
-	*f_attr_loc = *fattr;
-	strcpy((char*)f_name_loc, sFile);
-	
-/*	printf("%s [%u]\n", f_name_loc, *f_size_loc);*/
-	
-	queue_enqueue(file_queue, alloc_mem);
+	handleFile = CreateFile(strFilePath, GENERIC_READ,
+								0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (handleFile == INVALID_HANDLE_VALUE) {
+		return -1;
+	}
+	else {
+		
+		fileSize = GetFileSize(handleFile, NULL);
+		CloseHandle(handleFile);
+		fileAttribute = GetFileAttributes(strFilePath);
+		
+		fileData = (FileData *) malloc(sizeof(FileData));
+		pFileFullPath = (char *) malloc(strlen(strFilePath) + 1);
+
+		fileData->fileSize = fileSize;
+		fileData->fileAttribute = fileAttribute;
+		fileData->strFilePath = pFileFullPath;
+
+		strcpy(fileData->strFilePath, strFilePath);
+		*outFileData = fileData;
+	}
 	
 	return 0;
 	
 }
 
-
-inline int issafe(UINT *attr) {
-	
-/*	static UINT i, j;*/
-	
-/*	i = *attr & FILE_ATTRIBUTE_SYSTEM;*/
-/*	j = *attr & FILE_ATTRIBUTE_READONLY;*/
-	
-/*	*retval = i | j ;*/
-	
-	return *attr & (FILE_ATTRIBUTE_SYSTEM
-		| FILE_ATTRIBUTE_READONLY);
-}
-
-inline UINT file_size(WIN32_FIND_DATA *f_data) {
-	return (f_data->nFileSizeHigh * (MAXDWORD+1)) + f_data->nFileSizeLow;
-}
-
-inline void loc_file_size(void *mem, UINT **out) {
-	*out = mem;
-}
-
-inline void loc_file_attr(void *mem, UINT **out) {
-	*out = mem + sizeof(UINT);
-}
-
-inline void loc_file_name(void *mem, UCHAR **fname) {
-	*fname = mem + (2*sizeof(UINT));
-}
