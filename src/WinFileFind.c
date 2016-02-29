@@ -1,6 +1,7 @@
 
 
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -14,8 +15,6 @@
 
 
 static void util_freeFileData(void *fData);
-
-int file_buildFileList(const char *strDirectoryPath, List **outFileList);
 
 static int file_extractFromDirectory(const char *strDirectoryPath, List *fileList);
 
@@ -50,7 +49,12 @@ int file_isFileWritable(unsigned int fileAttribute) {
 	int isWritable;
 	
 	attrbForbidden = (unsigned int) (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM);
-	isWritable = (fileAttribute & attrbForbidden) == 0 ? 0 : 1;
+	
+	/* We expect that if a file is writable, then forbidden attributes */
+	/* Will not be present in the attributes of the file */
+	/* Perform a Bitwise AND operaton and check if the result is 0 */
+	/* After ANDing, if result is 0, then accept, else reject */
+	isWritable = (fileAttribute & attrbForbidden) == 0 ? 1 : 0;
 	
 	return isWritable;
 }
@@ -99,7 +103,7 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fileLis
 	HANDLE handleFile;
 	WIN32_FIND_DATA fileFindData;
 	FileData *fileData;
-	int valNextFile, fileCount;
+	int valNextFile, fileCount, cmpResult;
 	
 	valNextFile = 0;
 	fileCount = 0;
@@ -113,17 +117,16 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fileLis
 	}
 	else {
 		
-		do {
-			if(strcmp(fileFindData.cFileName, S_DOT)
-				&& strcmp(fileFindData.cFileName, D_DOT)) {
-				
+		valNextFile = 1;
+		while (valNextFile != 0) {
+			cmpResult = strcmp(fileFindData.cFileName, S_DOT)
+									&& strcmp(fileFindData.cFileName, D_DOT);
+			if(cmpResult != 0) {
 				sprintf(tempPathBuffer, MAKE_PATH_ABSOLUTE, strDirectoryPath, fileFindData.cFileName);
 				
 				if (fileFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 					file_extractFromDirectory((const char *) tempPathBuffer, fileList);
-					
 				} else {
-						
 					file_createFileData(tempPathBuffer, &fileData);
 					elem = list_tail(fileList);
 					list_ins_next(fileList, elem, (const void *) fileData);
@@ -131,8 +134,7 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fileLis
 				}
 			}
 			valNextFile = FindNextFile(handleFile, &fileFindData);
-			
-		} while (valNextFile != 0);
+		}   /* End of While loop */
 	}
 	
 	FindClose(handleFile);
@@ -149,6 +151,7 @@ static int file_createFileData(const char *strFilePath, FileData **outFileData) 
 	
 	handleFile = CreateFile(strFilePath, GENERIC_READ,
 								0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+								
 	if (handleFile == INVALID_HANDLE_VALUE) {
 		return -1;
 	}

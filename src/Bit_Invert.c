@@ -6,18 +6,19 @@
 int						eof_val;
 size_t					read_count;
 unsigned long int		total_bytes_s;
-fpos_t					prev_pos;
-fpos_t					first_pos;
 
 
 
-void position(FILE *f, const unsigned int *fileSize) {
+long int position(FILE *f, const unsigned int *fileSize, unsigned int skip_p) {
 	
-	first_pos = *fileSize / 4;
-	fsetpos(f, &first_pos);
+	/* skip_p means skip_percentage, value must be 0 to 100 */
 	
-/*	printf("Size %d, size/4 = %d\n", *fileSize, first_pos);*/
-	return;
+	long int filePosition;
+	
+	filePosition = ((long int) *fileSize * (long int) skip_p) / 100L;
+	fseek(f, filePosition, SEEK_SET);
+	
+	return filePosition;
 }
 
 
@@ -25,31 +26,28 @@ void position(FILE *f, const unsigned int *fileSize) {
 int invert_bit(char *buffer, unsigned int bufileSize, FILE *f, STAT *st) {
 	
 	register unsigned int j;
+	size_t singleByte;
+	long int readFrom;
+	
+	readFrom = 0;
+	singleByte = 1;
 	eof_val = 0;
-	prev_pos = 0;
-	read_count = 0;
-/*	int write_items = 0;*/
 	
-	
-/*	while(!eof_val) {*/
-	while (!eof_val) {
+	while (eof_val == 0) {
 		
-		read_count = fread(buffer, 1, bufileSize, f);
+		read_count = fread((void *) buffer, singleByte, (size_t) bufileSize, f);
 		
 		eof_val = feof(f);
-/*		printf("\treads %d, end-of-file %d\n", read_count, eof_val);*/
+		readFrom = ftell(f);
 		
-		fgetpos(f, &prev_pos);
-/*		printf("\tcurrent pos %d\n", prev_pos);*/
+		readFrom -= read_count;
+		fseek(f, readFrom, SEEK_SET);
 		
-		prev_pos -= read_count;
-		fsetpos(f, &prev_pos);
-/*		printf("\tnew pos %d\n", prev_pos);*/
-		
-		for (j=0; j < read_count; j++) {
-			*(buffer + j) = ~(*(buffer + j));
+		for (j = 0; j < read_count; j++) {
+			*(buffer + j) = ~(*(buffer + j));			/* Invert all bits in a byte */
 		}
-		fwrite(buffer, 1, read_count, f);
+		
+		fwrite((void *) buffer, singleByte, read_count, f);
 		fflush(f);
 		
 		st->byteProcessed += read_count;

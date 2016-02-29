@@ -16,7 +16,7 @@ struct stat_ {
 
 typedef struct stat_ STAT;
 
-void position(FILE* , const unsigned int* );
+long int position(FILE *f, const unsigned int *fileSize, unsigned int skip_p);
 int invert_bit(char *buffer, unsigned int buf_size, FILE *f, STAT *statProgress);
 
 unsigned int stat_countFailedFiles(STAT *statProgress);

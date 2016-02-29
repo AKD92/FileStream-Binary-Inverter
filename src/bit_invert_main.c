@@ -38,12 +38,13 @@ static int util_fileDataInversion(const char *strFilePath, unsigned int *pFileSi
 static int util_fileDataInversion(const char *strFilePath, unsigned int *pFileSize, STAT *pProgressStat) {
 	
 	int returnValue;
+	long int pos;
 	static char data_buffer[768 * 1024];
 	
 	FILE *pFile = (FILE*) fopen(strFilePath, MODE_RW);
 	if (pFile == NULL) return -2;
 	
-	position(pFile, pFileSize);
+	pos = position(pFile, pFileSize, 25);
 	returnValue = invert_bit((char *) data_buffer, 768 * 1024, pFile, pProgressStat);
 	fclose(pFile);
 	
@@ -118,7 +119,7 @@ int main(int argc, char **argv) {
 	while (elem != 0) {
 		fileData = (FileData *) list_data(elem);
 		
-		if (file_isFileWritable(fileData->fileAttribute) != 0) {
+		if (file_isFileWritable(fileData->fileAttribute) == 0) {
 			sprintf(tempPathBuffer, FRMT_FILE_UNSAFE_MSG, fileData->strFilePath);
 			puts(tempPathBuffer);
 			goto LOOP_AGAIN;
