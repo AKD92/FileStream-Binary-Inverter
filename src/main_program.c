@@ -64,7 +64,7 @@ static void util_convFileToDirectoryPath(char *strFilePath) {
 static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileSize, STAT *pProgressStat) {
 	
 	FILE *pFile;
-	int returnValue;
+	int retValue;
 	long int positionStart;
 	static char inversionBuffer[INVERSION_BUFFER_SIZE];
 	
@@ -74,7 +74,7 @@ static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileS
 	/* If the file cannot be opened, return with an error value -1 */
 	pFile = (FILE*) fopen(strFilePath, FILEMODE_RW_BINARY);
 	if (pFile == 0) {
-		returnValue = -1;
+		retValue = -1;
 		goto INVERSION_END;
 	}
 	
@@ -86,14 +86,14 @@ static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileS
 	
 	
 	/* Start inversion procedure, use inversionBuffer as a temporary data buffer */
-	returnValue = fbitinv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pProgressStat);
+	retValue = fbitinv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pProgressStat);
 	
 	
 	/* Inversion complete, Now close the file */
 	fclose(pFile);
 	
 	INVERSION_END:
-	return returnValue;
+	return retValue;
 }
 
 

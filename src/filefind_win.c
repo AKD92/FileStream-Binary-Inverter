@@ -15,8 +15,8 @@
 
 
 
-#define S_DOT "."
-#define D_DOT ".."
+#define DIR_CURRENT					"."
+#define DIR_PARENT					".."
 
 
 
@@ -34,8 +34,8 @@ static void util_freeFileData(void *fData) {
 	
 	FileData *data;
 	data = (FileData *) fData;
-	free(data->strFilePath);
-	free(fData);
+	free((void *) data->strFilePath);
+	free((void *) fData);
 	
 	return;
 }
@@ -44,15 +44,8 @@ static void util_freeFileData(void *fData) {
 
 int file_isFileWritable(unsigned int fileAttribute) {
 	
-/*	static unsigned int i, j;*/
-	
-/*	i = *fileAttribute & FILE_ATTRIBUTE_SYSTEM;*/
-/*	j = *fileAttribute & FILE_ATTRIBUTE_READONLY;*/
-	
-/*	*returnValue = i | j ;*/
-
-	unsigned int attrbForbidden;
 	int isWritable;
+	unsigned int attrbForbidden;
 	
 	attrbForbidden = (unsigned int) (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM);
 	
@@ -68,51 +61,54 @@ int file_isFileWritable(unsigned int fileAttribute) {
 
 int file_buildFileList(const char *strDirectoryPath, List **outFileList) {
 	
-	List *fileList;
+	List *fList;
 	ListElem *elem;
 	FileData *fileData;
 	DWORD fileAttribute;
 	DWORD isDirectory;
-	int returnValue;
+	int retValue;
 	
 	fileAttribute = GetFileAttributes(strDirectoryPath);
 	
 	if (fileAttribute == INVALID_FILE_ATTRIBUTES) {
-		returnValue = -1;
+		retValue = -1;
 	}
 	else {
-		fileList = (List *) malloc(sizeof(List));
-		list_init(fileList, util_freeFileData);
+		fList = (List *) malloc(sizeof(List));
+		list_init(fList, util_freeFileData);
 		
 		isDirectory = fileAttribute & FILE_ATTRIBUTE_DIRECTORY;
+		
 		if (isDirectory != 0) {
-			returnValue = file_extractFromDirectory(strDirectoryPath, fileList);
+			retValue = file_extractFromDirectory(strDirectoryPath, fList);
 		} else {
 			file_createFileData(strDirectoryPath, &fileData);
-			elem = list_tail(fileList);
-			list_ins_next(fileList, elem, (const void *) fileData);
-			returnValue = 0;
+			elem = list_tail(fList);
+			list_ins_next(fList, elem, (const void *) fileData);
+			retValue = 0;
 		}
 		
-		*outFileList = fileList;
+		*outFileList = fList;
 	}
 	
-	return returnValue;
+	return retValue;
 }
 
 
 
-static int file_extractFromDirectory(const char *strDirectoryPath, List *fileList) {
+static int file_extractFromDirectory(const char *strDirectoryPath, List *fList) {
 	
 	ListElem *elem;
 	char tempPathBuffer[2048];
 	HANDLE handleFile;
 	WIN32_FIND_DATA fileFindData;
 	FileData *fileData;
-	int valNextFile, fileCount, cmpResult;
+	int isDir;
+	int isCurrentDir, isParentDir, isRegularFile;
+	register int isNextFileExist, fileCount;
 	
-	valNextFile = 0;
 	fileCount = 0;
+	isNextFileExist = 0;
 	
 /*	Specify a file mask. *.* = We want everything!*/
 	sprintf(tempPathBuffer, MAKE_PATH_MASK, strDirectoryPath);
@@ -123,23 +119,31 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fileLis
 	}
 	else {
 		
-		valNextFile = 1;
-		while (valNextFile != 0) {
-			cmpResult = strcmp(fileFindData.cFileName, S_DOT)
-									&& strcmp(fileFindData.cFileName, D_DOT);
-			if(cmpResult != 0) {
+		isNextFileExist = 1;
+		while (isNextFileExist != 0) {
+			
+			isCurrentDir = strcmp((const char *) fileFindData.cFileName, (const char *) DIR_CURRENT);
+			isParentDir = strcmp((const char *) fileFindData.cFileName, (const char *) DIR_PARENT);
+			isRegularFile = isCurrentDir & isParentDir;
+			
+			if(isRegularFile != 0) {
+				
+				isDir = fileFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 				sprintf(tempPathBuffer, MAKE_PATH_ABSOLUTE, strDirectoryPath, fileFindData.cFileName);
 				
-				if (fileFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-					file_extractFromDirectory((const char *) tempPathBuffer, fileList);
+				if (isDir != 0) {
+					file_extractFromDirectory((const char *) tempPathBuffer, fList);
+					
 				} else {
+					
 					file_createFileData(tempPathBuffer, &fileData);
-					elem = list_tail(fileList);
-					list_ins_next(fileList, elem, (const void *) fileData);
+					elem = list_tail(fList);
+					list_ins_next(fList, elem, (const void *) fileData);
 					fileCount++;
 				}
 			}
-			valNextFile = FindNextFile(handleFile, &fileFindData);
+			
+			isNextFileExist = FindNextFile(handleFile, &fileFindData);
 		}   /* End of While loop */
 	}
 	
@@ -174,7 +178,7 @@ static int file_createFileData(const char *strFilePath, FileData **outFileData) 
 		fileData->fileAttribute = fileAttribute;
 		fileData->strFilePath = pFileFullPath;
 
-		strcpy(fileData->strFilePath, strFilePath);
+		strcpy(fileData->strFilePath, (const char *) strFilePath);
 		*outFileData = fileData;
 	}
 	

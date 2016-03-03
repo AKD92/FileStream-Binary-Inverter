@@ -36,7 +36,7 @@ long int fbitinv_setStartPosition(FILE *pFile, const unsigned int *fileSize, uns
 
 int fbitinv_invertFileBits(char *buffer, unsigned int buf_size, FILE *pFile, STAT *statProgress);
 
-unsigned int stat_percentageFailedFiles(STAT *statProgress);
+unsigned int stat_percentageFailedFiles(const STAT *statProgress);
 
 
 

@@ -21,28 +21,31 @@
 
 
 
-unsigned int stat_percentageFailedFiles(STAT *st) {
+unsigned int stat_percentageFailedFiles(const STAT *st) {
 
 	unsigned int numFailedFiles;
 	unsigned int pcntFailedFiles;
 	
 	numFailedFiles = st->totalFiles - st->processedFiles;
-	pcntFailedFiles = (unsigned int) ((double) numFailedFiles / (double) st->totalFiles * 100);
+	pcntFailedFiles = (unsigned int) ((double) numFailedFiles / (double) st->totalFiles * 100.0);
 	
 	return pcntFailedFiles;
 }
 
 
 
-long int fbitinv_setStartPosition(FILE *f, const unsigned int *fileSize, unsigned int skipPercent) {
+long int fbitinv_setStartPosition(FILE *pFile, const unsigned int *fileSize, unsigned int skipPercent) {
 	
 	long int filePosition;
+	
+	if (skipPercent > 100U)
+		return -1;
 	
 	/* Calculate actual bits to be skipped */
 	filePosition = ((long int) *fileSize * (long int) skipPercent) / 100L;
 	
 	/* Set current file pointer to the calculated value */
-	fseek(f, filePosition, SEEK_SET);
+	fseek(pFile, filePosition, SEEK_SET);
 	
 	return filePosition;
 }
