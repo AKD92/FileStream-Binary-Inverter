@@ -14,24 +14,30 @@
 
 
 
-#define BYTE_SINGLE					1
+#define BYTE_SINGLE						1
 
-#define ONE_KB						1024
-#define ONE_MB						ONE_KB * 1024
-#define ONE_GB						ONE_MB * 1024
-#define ONE_TB						ONE_GB * 1024
+#define ONE_KB							1024
+#define ONE_MB							ONE_KB * 1024
+#define ONE_GB							ONE_MB * 1024
+#define ONE_TB							ONE_GB * 1024
 
-#define SIZE_BYTES					"%u Bytes"
-#define SIZE_KB						"%.2f KB"
-#define SIZE_MB						"%.2f MB"
-#define SIZE_GB						"%.2f GB"
-#define SIZE_TB						"%.2f TB"
+#define FILESIZE_BYTES					"%4u Bytes"
+#define FILESIZE_KB						"%7.2f KB"
+#define FILESIZE_MB						"%7.2f MB"
+#define FILESIZE_GB						"%7.2f GB"
+#define FILESIZE_TB						"%7.2f TB"
+
+#define STREAMSIZE_BYTES				"%u Bytes"
+#define STREAMSIZE_KB					"%.2f KB"
+#define STREAMSIZE_MB					"%.2f MB"
+#define STREAMSIZE_GB					"%.2f GB"
+#define STREAMSIZE_TB					"%.2f TB"
 
 
 
 
 
-void util_alignFileSize(unsigned int fileSize, char *outFileSize) {
+void util_alignFileSize(unsigned int fileSize, char *outFileSizeBuffer) {
 	
 	double fSize, dUnit;
 	
@@ -40,24 +46,24 @@ void util_alignFileSize(unsigned int fileSize, char *outFileSize) {
 		fSize = (double) fileSize;
 		dUnit = (double) ONE_GB;
 		fSize = fSize / dUnit;
-		sprintf(outFileSize, SIZE_GB, fSize);
+		sprintf(outFileSizeBuffer, FILESIZE_GB, fSize);
 	}
 	else if (fileSize >= ONE_MB) {
 		
 		fSize = (double) fileSize;
 		dUnit = (double) ONE_MB;
 		fSize = fSize / dUnit;
-		sprintf(outFileSize, SIZE_MB, fSize);
+		sprintf(outFileSizeBuffer, FILESIZE_MB, fSize);
 	}
 	else if (fileSize >= ONE_KB) {
 		
 		fSize = (double) fileSize;
 		dUnit = (double) ONE_KB;
 		fSize = fSize / dUnit;
-		sprintf(outFileSize, SIZE_KB, fSize);
+		sprintf(outFileSizeBuffer, FILESIZE_KB, fSize);
 	}
 	else {
-		sprintf(outFileSize, SIZE_BYTES, fileSize);
+		sprintf(outFileSizeBuffer, FILESIZE_BYTES, fileSize);
 	}
 	
 	return;
@@ -65,39 +71,33 @@ void util_alignFileSize(unsigned int fileSize, char *outFileSize) {
 
 
 
-void util_alignStreamSize(unsigned long int strmSize, char *outStrmSize) {
+void util_alignStreamSize(unsigned long int strmSize, char *outStrmBuffer) {
 	
 	double sSize, dUnit;
 	
-	// if (strmSize >= ONE_TB) {
-		// sSize = (long double) strmSize;
-		// dUnit = (long double) ONE_TB;
-		// sSize = sSize / dUnit;
-		// sprintf(outStrmSize, SIZE_TB, sSize);
-	// }
 	if (strmSize >= ONE_GB) {
 		
 		sSize = (double) strmSize;
 		dUnit = (double) ONE_GB;
 		sSize = sSize / dUnit;
-		sprintf(outStrmSize, SIZE_GB, sSize);
+		sprintf(outStrmBuffer, STREAMSIZE_GB, sSize);
 	}
 	else if (strmSize >= ONE_MB) {
 		
 		sSize = (double) strmSize;
 		dUnit = (double) ONE_MB;
 		sSize = sSize / dUnit;
-		sprintf(outStrmSize, SIZE_MB, sSize);
+		sprintf(outStrmBuffer, STREAMSIZE_MB, sSize);
 	}
 	else if (strmSize >= ONE_KB) {
 		
 		sSize = (double) strmSize;
 		dUnit = (double) ONE_KB;
 		sSize = sSize / dUnit;
-		sprintf(outStrmSize, SIZE_KB, sSize);
+		sprintf(outStrmBuffer, STREAMSIZE_KB, sSize);
 	}
 	else {
-		sprintf(outStrmSize, SIZE_BYTES, strmSize);
+		sprintf(outStrmBuffer, STREAMSIZE_BYTES, strmSize);
 	}
 	
 	return;

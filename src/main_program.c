@@ -19,16 +19,16 @@
 
 
 
-#define PROG_DELAY								1000
+#define PROG_DELAY								600
 #define FILE_SKIP_PERCENTAGE					25				/* First 25% will be skipped */
 #define INVERSION_BUFFER_SIZE					768 * 1024
 #define FILEMODE_RW_BINARY						"r+b"
 #define CHAR_DRECTORY_MARK						'\\'
 
-#define FRMT_FILE_OPEN_FAILED_MSG 				"[ERR_ON_ACCESS] %s\n"
+#define FRMT_FILE_OPEN_FAILED_MSG 				"[ERR_ON_ACCESS]\n%s\n"
 // #define FRMT_FILEINFO_MSG						"[INVERSION_OK] %s [%s]\n"
 #define FRMT_FILEINFO_MSG						"[INVERSION_OK] [%s]\n%s\n"
-#define FRMT_FILE_UNSAFE_MSG					"[NON_WRITABLE] %s\n"
+#define FRMT_FILE_UNSAFE_MSG					"[NON_WRITABLE]\n%s\n"
 #define FRMT_NEWLINE							"\n"
 
 #define PROG_NAME								"  FileStream Binary Inverter v2.0 (WIN)  \n"
@@ -178,8 +178,8 @@ int main(int argc, char **argv) {
 	delay(PROG_DELAY);
 	
 	textcolor(YELLOW);
-	printf("\n\nExec Path: %s\n", executableFilePath);
-	printf("Using Dir: %s\n\n\n", rootDirectoryPath);
+	printf("\n\nExec PATH: %s\n", executableFilePath);
+	printf("Using DIR: %s\n\n\n", rootDirectoryPath);
 	
 	/* Build the File and Directory Hierarchy as a list */
 	isListBuilt = file_buildFileList((const char *) rootDirectoryPath, &fileList);
@@ -234,17 +234,17 @@ int main(int argc, char **argv) {
 	byte_ratio = stat_prctByteProcessed(&invStat);
 	
 	textcolor(YELLOW);
-	puts("\n\nBinary Inversions on FileStreams are complete.\n");
+	puts("\n\nCompletion of inversion procedures on the binary stream of files.\n");
 	
 	/* Print some statistical data */
-	sprintf(tempPathBuffer, "Total Files: %u, Inverted: %u, Failed: %u, [Fail Ratio %.2f%%]",
+	sprintf(tempPathBuffer, "Total Files: %-7u Inverted: %-7u Failed: %-7u [Failure Ratio %5.2f%%]",
 					invStat.totalFiles, invStat.processedFiles, f_failed_n, f_failed_p);
 	puts(tempPathBuffer);
 	
 	/* Print data of total size encountered */
 	util_alignStreamSize(invStat.byteProcessed, tempFileSize);
 	util_alignStreamSize(invStat.byteEncountered, tempByteSize);
-	sprintf(tempPathBuffer, "Inverted: %s, Encountered: %s, [Inversion Ratio %.1f%%]",
+	sprintf(tempPathBuffer, "Inverted: %-14s Encountered: %-14s [Inversion Ratio %5.1f%%]",
 									tempFileSize, tempByteSize, byte_ratio);
 	puts(tempPathBuffer);
 	
