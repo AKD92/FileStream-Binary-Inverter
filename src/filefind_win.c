@@ -1,7 +1,7 @@
 
 
 /************************************************************************************
-	Implementation of File List Generation routines for Windows platform
+	Implementation of File List Generation routines on Windows platform
 	Author:             Ashis Kumar Das
 	Email:              akd.bracu@gmail.com
 *************************************************************************************/
@@ -142,6 +142,7 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fList) 
 					fileCount++;
 				}
 			}
+			/* End of IF isRegularFile */
 			
 			isNextFileExist = FindNextFile(handleFile, &fileFindData);
 		}   /* End of While loop */

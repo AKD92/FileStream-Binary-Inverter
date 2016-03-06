@@ -1,7 +1,7 @@
 
 
 /************************************************************************************
-	Interface of File List Generation routines for Windows platform
+	Interface of File List Generation routines on Windows platform
 	Author:             Ashis Kumar Das
 	Email:              akd.bracu@gmail.com
 *************************************************************************************/
@@ -45,7 +45,7 @@ int file_buildFileList(const char *strDirectoryPath, List **outFileList);
 
 
 
-/* returns 1 if safe, 0 or more if unsafe file attribute */
+/* returns 1 if safe, 0 if unsafe file attribute */
 
 int file_isFileWritable(unsigned int fileAttribute);
 
