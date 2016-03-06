@@ -26,8 +26,10 @@
 #define CHAR_DRECTORY_MARK						'\\'
 
 #define FRMT_FILE_OPEN_FAILED_MSG 				"[ERR_ON_ACCESS] %s\n"
-#define FRMT_FILEINFO_MSG						"[FILE_OK] %s [%s]\n"
-#define FRMT_FILE_UNSAFE_MSG					"[SKIP_NOT_SAFE] %s\n"
+// #define FRMT_FILEINFO_MSG						"[INVERSION_OK] %s [%s]\n"
+#define FRMT_FILEINFO_MSG						"[INVERSION_OK] [%s]\n%s\n"
+#define FRMT_FILE_UNSAFE_MSG					"[NON_WRITABLE] %s\n"
+#define FRMT_NEWLINE							"\n"
 
 #define PROG_NAME								"  FileStream Binary Inverter v2.0 (WIN)  \n"
 #define PROG_AUTHOR								"  Programmed by AKD92 (akd.bracu@gmail.com)  \n"
@@ -71,8 +73,6 @@ static void util_convFileToDirectoryPath(char *strFilePath) {
 static void util_printProgramInfo(int delay_ms) {
 	
 	struct text_info txtInfo;
-	
-	printf("\n");
 	
 	textcolor(YELLOW);
 	textbackground(LIGHTBLUE);
@@ -171,6 +171,8 @@ int main(int argc, char **argv) {
 	
 	inittextinfo();
 	delay(PROG_DELAY / 5);
+	printf(FRMT_NEWLINE);
+	
 	util_printProgramInfo(PROG_DELAY);
 	normvideo();
 	delay(PROG_DELAY);
@@ -216,7 +218,7 @@ int main(int argc, char **argv) {
 			
 			textcolor(LIGHTGREEN);
 			util_alignFileSize(fileData->fileSize, tempFileSize);
-			sprintf(tempPathBuffer, FRMT_FILEINFO_MSG, fileData->strFilePath, tempFileSize);
+			sprintf(tempPathBuffer, FRMT_FILEINFO_MSG, tempFileSize, fileData->strFilePath);
 			puts(tempPathBuffer);
 			
 			invStat.processedFiles += 1;
@@ -258,7 +260,7 @@ int main(int argc, char **argv) {
 	util_printProgramInfo(0);
 	normvideo();
 	
-	getch();
+	getche();
 	
 	return 0;
 	
