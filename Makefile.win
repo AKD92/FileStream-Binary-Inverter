@@ -4,8 +4,8 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = obj/filefind_win.o obj/main_program.o obj/fbininv.o
-LINKOBJ  = obj/filefind_win.o obj/main_program.o obj/fbininv.o
+OBJ      = obj/filefind_win.o obj/main_program.o obj/fsbininv.o
+LINKOBJ  = obj/filefind_win.o obj/main_program.o obj/fsbininv.o
 LIBS     = -L"C:/Dev-Cpp/MinGW32/lib" -L"C:/Dev-Cpp/MinGW32/mingw32/lib" -static-libstdc++ -static-libgcc -L"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/lib" -L"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/lib" -llinkedlist -lconio -s
 INCS     = -I"C:/Dev-Cpp/MinGW32/include" -I"C:/Dev-Cpp/MinGW32/mingw32/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
 CXXINCS  = -I"C:/Dev-Cpp/MinGW32/include" -I"C:/Dev-Cpp/MinGW32/mingw32/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include/c++" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
@@ -30,5 +30,5 @@ obj/filefind_win.o: src/filefind_win.c
 obj/main_program.o: src/main_program.c
 	$(CC) -c src/main_program.c -o obj/main_program.o $(CFLAGS)
 
-obj/fbininv.o: src/fbininv.c
-	$(CC) -c src/fbininv.c -o obj/fbininv.o $(CFLAGS)
+obj/fsbininv.o: src/fsbininv.c
+	$(CC) -c src/fsbininv.c -o obj/fsbininv.o $(CFLAGS)
