@@ -13,7 +13,7 @@
 #include <conio2.h>
 #include <list.h>
 #include "filefind_win.h"
-#include "fbininv.h"
+#include "fsbininv.h"
 
 
 
@@ -24,6 +24,7 @@
 #define INVERSION_BUFFER_SIZE					768 * 1024
 #define FILEMODE_RW_BINARY						"r+b"
 #define CHAR_DRECTORY_MARK						'\\'
+
 #define FRMT_FILE_OPEN_FAILED_MSG 				"[ERR_ON_ACCESS] %s\n"
 #define FRMT_FILEINFO_MSG						"[FILE_OK] %s [%s]\n"
 #define FRMT_FILE_UNSAFE_MSG					"[SKIP_NOT_SAFE] %s\n"
@@ -113,11 +114,11 @@ static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileS
 	/* We want to start inverting bits of the specified file from 25% */
 	/* That means, first 25% bits of the file will be skipped */
 	/* Therefore, set start position (file pointer) at 25% */
-	positionStart = fbininv_setStartPosition(pFile, pFileSize, FILE_SKIP_PERCENTAGE);
+	positionStart = fsbininv_setStartPosition(pFile, pFileSize, FILE_SKIP_PERCENTAGE);
 	
 	
 	/* Start inversion procedure, use inversionBuffer as a temporary data buffer */
-	retValue = fbininv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pStat);
+	retValue = fsbininv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pStat);
 	pStat->byteEncountered += (unsigned long int) *pFileSize;
 	
 	/* Inversion complete, Now close the file */
@@ -234,14 +235,14 @@ int main(int argc, char **argv) {
 	puts("\n\nBinary Inversions on FileStreams are complete.\n");
 	
 	/* Print some statistical data */
-	sprintf(tempPathBuffer, "Total Files: %u \tInverted: %u \tFailed: %u \t[Fail Ratio %.2f%%]",
+	sprintf(tempPathBuffer, "Total Files: %u, Inverted: %u, Failed: %u, [Fail Ratio %.2f%%]",
 					invStat.totalFiles, invStat.processedFiles, f_failed_n, f_failed_p);
 	puts(tempPathBuffer);
 	
 	/* Print data of total size encountered */
 	util_alignStreamSize(invStat.byteProcessed, tempFileSize);
 	util_alignStreamSize(invStat.byteEncountered, tempByteSize);
-	sprintf(tempPathBuffer, "Inverted: %s \tEncountered: %s \t\t[Inversion Ratio %.1f%%]",
+	sprintf(tempPathBuffer, "Inverted: %s, Encountered: %s, [Inversion Ratio %.1f%%]",
 									tempFileSize, tempByteSize, byte_ratio);
 	puts(tempPathBuffer);
 	
