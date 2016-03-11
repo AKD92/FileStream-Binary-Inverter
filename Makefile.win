@@ -4,14 +4,14 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = obj/filefind_win.o obj/main_program.o obj/fsbininv.o
-LINKOBJ  = obj/filefind_win.o obj/main_program.o obj/fsbininv.o
-LIBS     = -L"C:/Dev-Cpp/MinGW32/lib" -L"C:/Dev-Cpp/MinGW32/mingw32/lib" -static-libstdc++ -static-libgcc -L"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/lib" -L"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/lib" -llinkedlist -lconio -s
-INCS     = -I"C:/Dev-Cpp/MinGW32/include" -I"C:/Dev-Cpp/MinGW32/mingw32/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
-CXXINCS  = -I"C:/Dev-Cpp/MinGW32/include" -I"C:/Dev-Cpp/MinGW32/mingw32/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include" -I"C:/Dev-Cpp/MinGW32/lib/gcc/mingw32/4.8.1/include/c++" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
-BIN      = bin/fsbininvt.exe
-CXXFLAGS = $(CXXINCS) -ansi -std=c99 -Wall
-CFLAGS   = $(INCS) -ansi -std=c99 -Wall
+OBJ      = obj/filefind_win.o obj/main_program.o obj/fsbininv.o obj/console_dec.o
+LINKOBJ  = obj/filefind_win.o obj/main_program.o obj/fsbininv.o obj/console_dec.o
+LIBS     = -L"C:/Dev-Cpp/MinGW64/lib32" -L"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -L"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/lib" -L"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/lib" -llinkedlist -lconio -m32 -s
+INCS     = -I"C:/Dev-Cpp/MinGW64/include" -I"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
+CXXINCS  = -I"C:/Dev-Cpp/MinGW64/include" -I"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
+BIN      = bin/fsbinv.exe
+CXXFLAGS = $(CXXINCS) -ansi -m32 -std=c99 -Wall
+CFLAGS   = $(INCS) -ansi -m32 -std=c99 -Wall
 RM       = rm.exe -f
 
 .PHONY: all all-before all-after clean clean-custom
@@ -32,3 +32,6 @@ obj/main_program.o: src/main_program.c
 
 obj/fsbininv.o: src/fsbininv.c
 	$(CC) -c src/fsbininv.c -o obj/fsbininv.o $(CFLAGS)
+
+obj/console_dec.o: src/console_dec.c
+	$(CC) -c src/console_dec.c -o obj/console_dec.o $(CFLAGS)
