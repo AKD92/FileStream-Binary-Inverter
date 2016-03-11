@@ -7,6 +7,6 @@
 
 
 <p>
+<img align="right" width="500px" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fscrn_2.png">
 <br>2) After the completion of inversion procedure</br>
-<img align="middle" width="500px" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fscrn_2.png">
 </p>
