@@ -23,8 +23,8 @@
 struct inv_stat_ {
 	unsigned int totalFiles;
 	unsigned int processedFiles;
-	unsigned long int byteProcessed;
-	unsigned long int byteEncountered;
+	unsigned long long int byteProcessed;
+	unsigned long long int byteEncountered;
 };
 
 typedef struct inv_stat_ InversionStat;
@@ -33,21 +33,21 @@ typedef struct inv_stat_ InversionStat;
 
 
 
-long int fsbininv_setStartPosition(FILE *pFile, const unsigned int *fileSize, unsigned int skipPercent);
+long int fsbininv_setStartPosition(FILE *pFile, unsigned long long int fileSize, unsigned int skipPercent);
 
 int fsbininv_invertFileBits(char *buffer, unsigned int buf_size, FILE *pFile, InversionStat *invStat);
 
 
 
-double stat_prctFailedFiles(const InversionStat *invStat);
+double stat_pctgFailedFiles(const InversionStat *invStat);
 
-double stat_prctByteProcessed(const InversionStat *invStat);
+double stat_pctgByteProcessed(const InversionStat *invStat);
 
 
 
-void util_alignFileSize(unsigned int fileSize, char *outFileSizeBuffer);
+void util_alignFileSize(unsigned long long int fileSize, char *outFileSizeBuffer);
 
-void util_alignStreamSize(unsigned long int strmSize, char *outStrmSizeBuffer);
+void util_alignStreamSize(unsigned long long int strmSize, char *outStrmSizeBuffer);
 
 
 

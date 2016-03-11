@@ -21,20 +21,10 @@
 
 #define PROG_DELAY								600
 #define FILE_SKIP_PERCENTAGE					25				/* First 25% will be skipped */
-#define INVERSION_BUFFER_SIZE					768 * 1024
+#define INVERSION_BUFFER_SIZE					512 * 1024		/* 512 kilo bytes */
 #define FILEMODE_RW_BINARY						"r+b"
-#define CHAR_DRECTORY_MARK						'\\'
 
-#define FRMT_FILE_OPEN_FAILED_MSG 				"[ERR_ON_ACCESS]\n%s\n"
-// #define FRMT_FILEINFO_MSG						"[INVERSION_OK] %s [%s]\n"
-#define FRMT_FILEINFO_MSG						"[INVERSION_OK] [%s]\n%s\n"
-#define FRMT_FILE_UNSAFE_MSG					"[NON_WRITABLE]\n%s\n"
-#define FRMT_NEWLINE							"\n"
-
-#define PROG_NAME								"  FileStream Binary Inverter v2.0 (WIN)  \n"
-#define PROG_AUTHOR								"  Programmed by AKD92 (akd.bracu@gmail.com)  \n"
-#define PROG_WEB								"  https://github.com/AKD92  \n"
-
+#define NEWLINE									'\n'
 
 
 
@@ -43,11 +33,31 @@
 
 int main(int argc, char ** argv);
 
-static void util_convFileToDirectoryPath(char *strFilePath);
+static void util_getParentDirectory(char *strFilePath);
 
-static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileSize, InversionStat *pProgressStat);
+static int util_commitInversion(const char *strFilePath, unsigned long long int fSize, InversionStat *pInvStat);
 
-static void util_printProgramInfo(int delay_ms);
+
+
+
+void console_printProgramInfo();
+
+void console_showWaitTimer(int type, int delay_ms);
+
+void console_printInitDirectories(char *inputDir, char *execFilePath, int delay_ms);
+
+void console_printStatistics(const InversionStat *pInvStat, int refDelay);
+
+
+void console_printActiveFile(char *fPath, unsigned long long int fSize);
+
+void console_printInvertedFile(char *fPath, unsigned long long int fSize, int x, int y);
+
+void console_printLockedFile(char *fPath, unsigned long long int fSize, int x, int y);
+
+void console_printNotWritableFile(char *fPath, unsigned long long int fSize, int x, int y);
+
+
 
 
 
@@ -57,74 +67,55 @@ static void util_printProgramInfo(int delay_ms);
 /**************************** IMPLEMENTATION (DRIVER PROGRAM) *********************/
 
 
-static void util_convFileToDirectoryPath(char *strFilePath) {
+static void util_getParentDirectory(char *strFilePath) {
 	
 	char *loc;
+	char dirMark;
+	
+	dirMark = '\\';
 	
 	/* Search backward using strrchar() */
-	loc = strrchr(strFilePath, CHAR_DRECTORY_MARK);
-	*(loc + 1) = 0;
+	loc = strrchr(strFilePath, dirMark);
+	
+	/* Replace the dirMark we just found with NUL terminator */
+	*(loc) = 0;
 	
 	return;
 }
 
 
 
-static void util_printProgramInfo(int delay_ms) {
-	
-	struct text_info txtInfo;
-	
-	textcolor(YELLOW);
-	textbackground(LIGHTBLUE);
-	
-	gettextinfo(&txtInfo);
-	cputsxy((txtInfo.screenwidth - strlen(PROG_NAME)), txtInfo.cury, PROG_NAME);
-	
-	if (delay_ms > 0) delay(delay_ms);
-	gettextinfo(&txtInfo);
-	cputsxy((txtInfo.screenwidth - strlen(PROG_AUTHOR)), txtInfo.cury, PROG_AUTHOR);
-	
-	if (delay_ms > 0) delay(delay_ms);
-	gettextinfo(&txtInfo);
-	cputsxy((txtInfo.screenwidth - strlen(PROG_WEB)), txtInfo.cury, PROG_WEB);
-	
-	return;
-}
-
-
-
-static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileSize, InversionStat *pStat) {
+static int util_commitInversion(const char *strFilePath, unsigned long long int fSize, InversionStat *pInvStat) {
 	
 	FILE *pFile;
 	int retValue;
-	long int positionStart;
 	static char inversionBuffer[INVERSION_BUFFER_SIZE];
 	
 	
 	/* We are ready to start our inversion procedure on the specified file */
 	/* So, first we open the file in [READ + WRITE + BINARY] mode */
 	/* If the file cannot be opened, return with an error value -1 */
-	pFile = (FILE*) fopen(strFilePath, FILEMODE_RW_BINARY);
+	pFile = (FILE *) fopen64(strFilePath, FILEMODE_RW_BINARY);
 	if (pFile == 0) {
 		retValue = -1;
-		goto INVERSION_END;
+		goto END;
 	}
 	
 	
 	/* We want to start inverting bits of the specified file from 25% */
 	/* That means, first 25% bits of the file will be skipped */
 	/* Therefore, set start position (file pointer) at 25% */
-	positionStart = fsbininv_setStartPosition(pFile, pFileSize, FILE_SKIP_PERCENTAGE);
+	fsbininv_setStartPosition(pFile, fSize, FILE_SKIP_PERCENTAGE);
 	
 	
 	/* Start inversion procedure, use inversionBuffer as a temporary data buffer */
-	retValue = fsbininv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pStat);
-	pStat->byteEncountered += (unsigned long int) *pFileSize;
+	retValue = fsbininv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pInvStat);
+	pInvStat->byteEncountered += (unsigned long long int) fSize;
 	
 	/* Inversion complete, Now close the file */
 	fclose(pFile);
 	
-	INVERSION_END:
+	END:
 	return retValue;
 }
 
@@ -133,22 +124,24 @@ static int util_fileApplyInversion(const char *strFilePath, unsigned int *pFileS
 
 int main(int argc, char **argv) {
 	
-	int isListBuilt;
 	
 	ListElem *elem;
-	List *fileList;
+	List *listFiles;
 	InversionStat invStat;
-	FileData *fileData;
-	unsigned int f_failed_n;
-	double f_failed_p, byte_ratio;
+	FileData *fData;
 	
-	int op_status;
-	char tempPathBuffer[2048], executableFilePath[2048], *rootDirectoryPath;
-	char tempFileSize[20], tempByteSize[20];
+	int isListBuilt;
+	int msg_x, msg_y;
+	int invOpValue, isError;
+	
+	char *rootDirectoryPath, executableFilePath[2048];
+	
 	
 	elem = 0;
-	fileList = 0;
-	fileData = 0;
+	isError = 0;
+	listFiles = 0;
+	fData = 0;
+	rootDirectoryPath = 0;
 	memset((void *) &invStat, 0, sizeof(InversionStat));
 	
 	
@@ -157,111 +150,140 @@ int main(int argc, char **argv) {
 	
 	
 	/* Allocate memory for storing path of starting directory (the first one) */
-	rootDirectoryPath = (char *) malloc(sizeof(char) * 1024);
+	rootDirectoryPath = (char *) malloc(sizeof(char) * 2048);
+	if (rootDirectoryPath == 0)
+			goto END;
 	
 	
-	/* If user didnot specify a path explicitly, use directory path of this program */
+	/* If user didnot specify a path explicitly, use directory path of this executable */
 	if (argc < 2) {
-		strcpy(rootDirectoryPath, executableFilePath);
-		util_convFileToDirectoryPath(rootDirectoryPath);
+		strcpy((char *) rootDirectoryPath, (const char *) executableFilePath);
+		util_getParentDirectory(rootDirectoryPath);
 	}
 	else {
-		strcpy(rootDirectoryPath, (const char *) argv + 1);
+		strcpy((char *) rootDirectoryPath, (const char *) *(argv + 1));
 	}
 	
+	delay(PROG_DELAY / 8);
+	putch(NEWLINE);
+	_setcursortype(_SOLIDCURSOR);
 	inittextinfo();
-	delay(PROG_DELAY / 5);
-	printf(FRMT_NEWLINE);
 	
-	util_printProgramInfo(PROG_DELAY);
+	console_printProgramInfo();
 	normvideo();
+	putch(NEWLINE);
 	delay(PROG_DELAY);
 	
+	console_printInitDirectories(rootDirectoryPath, executableFilePath, PROG_DELAY /2 );
+	delay(PROG_DELAY / 2);
+	
 	textcolor(YELLOW);
-	printf("\n\nExec PATH: %s\n", executableFilePath);
-	printf("Using DIR: %s\n\n\n", rootDirectoryPath);
+	cputs("Traversing through the file system");
 	
 	/* Build the File and Directory Hierarchy as a list */
-	isListBuilt = file_buildFileList((const char *) rootDirectoryPath, &fileList);
+	isListBuilt = file_buildFileList((const char *) rootDirectoryPath, &listFiles);
+	
 	if (isListBuilt < 0) {
 		
+		isError = -1;
+		console_showWaitTimer(2, PROG_DELAY / 4);
+		normvideo();
+		
+		putch(NEWLINE);
+		putch(NEWLINE);
+		
 		textcolor(LIGHTRED);
-		puts("Could not find files or directories. Program will terminate.");
+		cputs("Input directory or file path is invalid. Program will terminate.\n");
 		goto END;
 	}
 	
-	invStat.totalFiles = list_size(fileList);
+	console_showWaitTimer(1, list_size(listFiles));
+	normvideo();
+	putch(NEWLINE);
+	putch(NEWLINE);
 	
-	elem = list_head(fileList);
+	
+	invStat.totalFiles = list_size(listFiles);
+	elem = list_head(listFiles);
+	
 	while (elem != 0) {
 		
-		fileData = (FileData *) list_data(elem);
+		/* Get a FileData object from the Linked List */
+		msg_x = wherex();
+		msg_y = wherey();
+		fData = (FileData *) list_data(elem);
+		console_printActiveFile(fData->strFilePath, fData->fileSize);
+		// delay(1000);
 		
-		if (file_isFileWritable(fileData->fileAttribute) == 0) {
+		/* Check if this file is Writable or not */
+		if (file_isFileWritable(fData->fileAttribute) == 0) {
 			
-			textcolor(LIGHTRED);
-			sprintf(tempPathBuffer, FRMT_FILE_UNSAFE_MSG, fileData->strFilePath);
-			puts(tempPathBuffer);
-			
+			console_printNotWritableFile(fData->strFilePath, fData->fileSize, msg_x, msg_y);
+			delay(300);
+			// flashbackground(BLUE, 300);
 			goto LOOP_AGAIN;
 		}
 		
-		op_status = util_fileApplyInversion(fileData->strFilePath, &fileData->fileSize, &invStat);
+		/* Apply Inversion process to this File */
+		invOpValue = util_commitInversion(fData->strFilePath, fData->fileSize, &invStat);
 		
-		if (op_status != 0) {
+		/* Check if ERROR occured on file access */
+		if (invOpValue != 0) {
 			
-			textcolor(LIGHTRED);
-			sprintf(tempPathBuffer, FRMT_FILE_OPEN_FAILED_MSG, fileData->strFilePath);
-			puts(tempPathBuffer);
+			/* This file has attributes which forbids WRITE permission */
+			/* Ex: READONLY, SYSTEM etc */
+			/* We print an error message conveying this fact */
+			console_printLockedFile(fData->strFilePath, fData->fileSize, msg_x, msg_y);
+			delay(300);
+			// flashbackground(BLUE, 300);
+		}
+		else {
 			
-		} else {
-			
-			textcolor(LIGHTGREEN);
-			util_alignFileSize(fileData->fileSize, tempFileSize);
-			sprintf(tempPathBuffer, FRMT_FILEINFO_MSG, tempFileSize, fileData->strFilePath);
-			puts(tempPathBuffer);
-			
+			/* Inversion process has done successfully to this File */
+			/* We print a message conveying our success */
+			console_printInvertedFile(fData->strFilePath, fData->fileSize, msg_x, msg_y);
 			invStat.processedFiles += 1;
 		}
-		
 		LOOP_AGAIN:
 		elem = list_next(elem);
 	}
 	
-	/* Gather statistical informations */
-	f_failed_n = invStat.totalFiles - invStat.processedFiles;
-	f_failed_p = stat_prctFailedFiles(&invStat);
-	byte_ratio = stat_prctByteProcessed(&invStat);
+	putch(NEWLINE);
+	putch(NEWLINE);
 	
-	textcolor(YELLOW);
-	puts("\n\nCompletion of inversion procedures on the binary stream of files.\n");
-	
-	/* Print some statistical data */
-	sprintf(tempPathBuffer, "Total Files: %-7u Inverted: %-7u Failed: %-7u [Failure Ratio %5.2f%%]",
-					invStat.totalFiles, invStat.processedFiles, f_failed_n, f_failed_p);
-	puts(tempPathBuffer);
-	
-	/* Print data of total size encountered */
-	util_alignStreamSize(invStat.byteProcessed, tempFileSize);
-	util_alignStreamSize(invStat.byteEncountered, tempByteSize);
-	sprintf(tempPathBuffer, "Inverted: %-14s Encountered: %-14s [Inversion Ratio %5.1f%%]",
-									tempFileSize, tempByteSize, byte_ratio);
-	puts(tempPathBuffer);
+	console_printStatistics(&invStat, PROG_DELAY);
+	putch(NEWLINE);
 	
 	
-	/* Clean up */
+	
 	END:
-	list_destroy(fileList);
+	/* Clean up all these mess */
+	
 	free((void *) rootDirectoryPath);
+	if (listFiles != 0) list_destroy(listFiles);
 	
-	textcolor(YELLOW);
-	puts("\nPress ANY KEY to EXIT");
+	if (isError == 0) {
+		
+		textcolor(YELLOW);
+		cputs("\nPress ANY KEY to ");
+		textcolor(LIGHTRED);
+		cputs("EXIT\n\n");
+		
+		console_printProgramInfo();
+		normvideo();
+		
+		clearkeybuf();
+		getch();
+		
+	}
+	else {
+		normvideo();
+		delay(PROG_DELAY);
+	}
 	
-	util_printProgramInfo(0);
-	normvideo();
+	_setcursortype(_NORMALCURSOR);
+	delay(PROG_DELAY / 5);
 	
-	getche();
-	
-	return 0;
+	return isError;
 	
 }

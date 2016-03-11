@@ -30,7 +30,7 @@
 struct FileData_ {
 	
 	char *strFilePath;
-	unsigned int fileSize;
+	unsigned long long int fileSize;
 	unsigned int fileAttribute;
 	
 };

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <windows.h>
 #include "filefind_win.h"
 
@@ -136,7 +137,7 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fList) 
 					
 				} else {
 					
-					file_createFileData(tempPathBuffer, &fileData);
+					file_createFileData((const char *) tempPathBuffer, &fileData);
 					elem = list_tail(fList);
 					list_ins_next(fList, elem, (const void *) fileData);
 					fileCount++;
@@ -154,34 +155,24 @@ static int file_extractFromDirectory(const char *strDirectoryPath, List *fList) 
 
 static int file_createFileData(const char *strFilePath, FileData **outFileData) {
 	
-	DWORD * handleFile;
-	DWORD fileSize;
 	DWORD fileAttribute;
 	FileData *fileData;
 	char *pFileFullPath;
+	static struct stat64 fStat;
 	
-	handleFile = CreateFile(strFilePath, GENERIC_READ,
-								0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-								
-	if (handleFile == INVALID_HANDLE_VALUE) {
-		return -1;
-	}
-	else {
-		
-		fileSize = GetFileSize(handleFile, NULL);
-		CloseHandle(handleFile);
-		fileAttribute = GetFileAttributes(strFilePath);
-		
-		fileData = (FileData *) malloc(sizeof(FileData));
-		pFileFullPath = (char *) malloc(strlen(strFilePath) + 1);
+	stat64(strFilePath, &fStat);
+	fileAttribute = GetFileAttributes(strFilePath);
+	
+	fileData = (FileData *) malloc(sizeof(FileData));
+	pFileFullPath = (char *) malloc(strlen(strFilePath) + 1);
 
-		fileData->fileSize = fileSize;
-		fileData->fileAttribute = fileAttribute;
-		fileData->strFilePath = pFileFullPath;
+	fileData->fileSize = (unsigned long long int) fStat.st_size;
+	fileData->fileAttribute = (unsigned int) fileAttribute;
+	fileData->strFilePath = pFileFullPath;
 
-		strcpy(fileData->strFilePath, (const char *) strFilePath);
-		*outFileData = fileData;
-	}
+	strcpy(fileData->strFilePath, (const char *) strFilePath);
+	*outFileData = fileData;
+
 	
 	return 0;
 	

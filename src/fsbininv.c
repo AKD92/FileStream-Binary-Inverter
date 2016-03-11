@@ -21,13 +21,13 @@
 #define ONE_GB							ONE_MB * 1024
 #define ONE_TB							ONE_GB * 1024
 
-#define FILESIZE_BYTES					"%4u Bytes"
+#define FILESIZE_BYTES					"%4llu Bytes"
 #define FILESIZE_KB						"%7.2f KB"
 #define FILESIZE_MB						"%7.2f MB"
 #define FILESIZE_GB						"%7.2f GB"
 #define FILESIZE_TB						"%7.2f TB"
 
-#define STREAMSIZE_BYTES				"%u Bytes"
+#define STREAMSIZE_BYTES				"%llu Bytes"
 #define STREAMSIZE_KB					"%.2f KB"
 #define STREAMSIZE_MB					"%.2f MB"
 #define STREAMSIZE_GB					"%.2f GB"
@@ -37,7 +37,7 @@
 
 
 
-void util_alignFileSize(unsigned int fileSize, char *outFileSizeBuffer) {
+void util_alignFileSize(unsigned long long int fileSize, char *outFileSizeBuffer) {
 	
 	double fSize, dUnit;
 	
@@ -71,7 +71,7 @@ void util_alignFileSize(unsigned int fileSize, char *outFileSizeBuffer) {
 
 
 
-void util_alignStreamSize(unsigned long int strmSize, char *outStrmBuffer) {
+void util_alignStreamSize(unsigned long long int strmSize, char *outStrmBuffer) {
 	
 	double sSize, dUnit;
 	
@@ -105,7 +105,7 @@ void util_alignStreamSize(unsigned long int strmSize, char *outStrmBuffer) {
 
 
 
-double stat_prctFailedFiles(const InversionStat *st) {
+double stat_pctgFailedFiles(const InversionStat *st) {
 
 	unsigned int numFailedFiles;
 	double pcntFailedFiles;
@@ -123,7 +123,7 @@ double stat_prctFailedFiles(const InversionStat *st) {
 
 
 
-double stat_prctByteProcessed(const InversionStat *st) {
+double stat_pctgByteProcessed(const InversionStat *st) {
 	
 	double pcntByteProcessed;
 	double byteProcessed;
@@ -139,21 +139,18 @@ double stat_prctByteProcessed(const InversionStat *st) {
 
 
 
-long int fsbininv_setStartPosition(FILE *pFile, const unsigned int *fileSize, unsigned int skipPercent) {
+long int fsbininv_setStartPosition(FILE *pFile, unsigned long long int fileSize, unsigned int skipPercent) {
 	
-	long int filePosition;
-	long int fSize, skPrcnt;
+	off64_t filePosition;
 	
 	if (skipPercent > 100U)
 		return -1;
 	
 	/* Calculate actual bits to be skipped */
-	fSize = (long int) *fileSize;
-	skPrcnt = (long int) skipPercent;
-	filePosition = (fSize * skPrcnt) / 100L;
+	filePosition = (off64_t) (fileSize * skipPercent) / 100L;
 	
 	/* Set current file pointer to the calculated value */
-	fseek(pFile, filePosition, SEEK_SET);
+	fseeko64(pFile, filePosition, SEEK_SET);
 	
 	return filePosition;
 }
@@ -165,7 +162,7 @@ int fsbininv_invertFileBits(char *dataBuffer, unsigned int bufferSize, FILE *pFi
 	register size_t readCount;
 	register int isEOF;
 	register unsigned int index;
-	register long int readPointer;
+	register off64_t readPointer;
 	
 	isEOF = 0;
 	readPointer = 0;
@@ -179,11 +176,11 @@ int fsbininv_invertFileBits(char *dataBuffer, unsigned int bufferSize, FILE *pFi
 		isEOF = feof(pFile);
 		
 		/* Obtain the current file pointer after a READ */
-		readPointer = ftell(pFile);
+		readPointer = ftello64(pFile);
 		
 		/* Set file pointer to the previus position (before this READ) */
-		readPointer = readPointer - readCount;
-		fseek(pFile, readPointer, SEEK_SET);
+		readPointer = readPointer - (off64_t) readCount;
+		fseeko64(pFile, readPointer, SEEK_SET);
 		
 		
 		/* Invert all bits those reside on the dataBuffer */
@@ -196,7 +193,7 @@ int fsbininv_invertFileBits(char *dataBuffer, unsigned int bufferSize, FILE *pFi
 		/* WRITE the mutated (inverted) bytes from dataBuffer to File */
 		fwrite((void *) dataBuffer, BYTE_SINGLE, readCount, pFile);
 		
-		/* Flush the file for writing into actual output device (hardware access) */
+		/* Flush the file for synchronizing with output device (hardware access) */
 		fflush(pFile);
 		
 		/* Add the number of bytes already processed to our InversionStat object */
