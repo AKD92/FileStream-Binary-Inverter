@@ -9,6 +9,7 @@
 
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <windows.h>
@@ -43,12 +44,12 @@ static void util_freeFileData(void *fData) {
 
 
 
-int file_isFileWritable(unsigned int fileAttribute) {
+int file_isFileWritable(uint32_t fileAttribute) {
 	
 	int isWritable;
-	unsigned int attrbForbidden;
+	uint32_t attrbForbidden;
 	
-	attrbForbidden = (unsigned int) (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM);
+	attrbForbidden = (uint32_t) (FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM);
 	
 	/* We expect that if a file is writable, then forbidden attributes */
 	/* Will not be present in the attributes of the file */
@@ -166,8 +167,8 @@ static int file_createFileData(const char *strFilePath, FileData **outFileData) 
 	fileData = (FileData *) malloc(sizeof(FileData));
 	pFileFullPath = (char *) malloc(strlen(strFilePath) + 1);
 
-	fileData->fileSize = (unsigned long long int) fStat.st_size;
-	fileData->fileAttribute = (unsigned int) fileAttribute;
+	fileData->fileSize = (uint64_t) fStat.st_size;
+	fileData->fileAttribute = (uint32_t) fileAttribute;
 	fileData->strFilePath = pFileFullPath;
 
 	strcpy(fileData->strFilePath, (const char *) strFilePath);

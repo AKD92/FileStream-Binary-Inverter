@@ -3,6 +3,7 @@
 
 
 #include <stdio.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio2.h>
@@ -51,20 +52,20 @@ void console_showWaitTimer(int type, int delay_ms);
 
 void console_printInitDirectories(char *inputDir, char *execFilePath, int delay_ms);
 
-void console_printStatistics(const InversionStat *pInvStat, int refDelay);
+void console_printStatistics(const InvStat *pInvStat, int refDelay);
 
 
-void console_printActiveFile(char *fPath, unsigned long long int fSize);
+void console_printActiveFile(char *fPath, uint64_t fSize);
 
-void console_printInvertedFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printInvertedFile(char *fPath, uint64_t fSize, int x, int y);
 
-void console_printLockedFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printLockedFile(char *fPath, uint64_t fSize, int x, int y);
 
-void console_printNotWritableFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printNotWritableFile(char *fPath, uint64_t fSize, int x, int y);
 
 
 
-void util_alignFileSize(unsigned long long int fileSize, char *outFileSizeBuffer);
+void util_alignFileSize(uint64_t fileSize, char *outFileSizeBuffer);
 
 
 
@@ -117,11 +118,12 @@ void console_printProgramInfo(void) {
 
 
 
-void console_printStatistics(const InversionStat *pInvStat, int refDelay) {
+void console_printStatistics(const InvStat *pInvStat, int refDelay) {
 	
 	char waitLetter;
 	double pctgFailed, invRatio;
-	unsigned int countFailed, iCount;
+	uint32_t countFailed;
+	unsigned int iCount;
 	char tmpBuf_1[20], tmpBuf_2[20], tmpBuf_3[20], tmpBuf_4[20], tmpBuf_5[20];
 	
 	
@@ -153,9 +155,9 @@ void console_printStatistics(const InversionStat *pInvStat, int refDelay) {
 	
 	/* Print some statistical data */
 	
-	sprintf(tmpBuf_1, "%-7u", pInvStat->totalFiles);
-	sprintf(tmpBuf_2, "%-7u", pInvStat->processedFiles);
-	sprintf(tmpBuf_3, "%-6u", countFailed);
+	sprintf(tmpBuf_1, "%-7" PRIu32, pInvStat->totalFiles);
+	sprintf(tmpBuf_2, "%-7" PRIu32, pInvStat->processedFiles);
+	sprintf(tmpBuf_3, "%-6" PRIu32, countFailed);
 	sprintf(tmpBuf_4, "%5.2f", pctgFailed);
 	
 	textcolor(YELLOW);
@@ -210,7 +212,7 @@ void console_printStatistics(const InversionStat *pInvStat, int refDelay) {
 
 
 
-void console_printActiveFile(char *fPath, unsigned long long int fSize) {
+void console_printActiveFile(char *fPath, uint64_t fSize) {
 	
 	util_alignFileSize(fSize, tempFileSizeBuffer);
 	
@@ -230,7 +232,7 @@ void console_printActiveFile(char *fPath, unsigned long long int fSize) {
 
 
 
-void console_printInvertedFile(char *fPath, unsigned long long int fSize, int x, int y) {
+void console_printInvertedFile(char *fPath, uint64_t fSize, int x, int y) {
 	
 	util_alignFileSize(fSize, tempFileSizeBuffer);
 	
@@ -251,7 +253,7 @@ void console_printInvertedFile(char *fPath, unsigned long long int fSize, int x,
 
 
 
-void console_printLockedFile(char *fPath, unsigned long long int fSize, int x, int y) {
+void console_printLockedFile(char *fPath, uint64_t fSize, int x, int y) {
 	
 	util_alignFileSize(fSize, tempFileSizeBuffer);
 	
@@ -272,7 +274,7 @@ void console_printLockedFile(char *fPath, unsigned long long int fSize, int x, i
 
 
 
-void console_printNotWritableFile(char *fPath, unsigned long long int fSize, int x, int y) {
+void console_printNotWritableFile(char *fPath, uint64_t fSize, int x, int y) {
 	
 	util_alignFileSize(fSize, tempFileSizeBuffer);
 	

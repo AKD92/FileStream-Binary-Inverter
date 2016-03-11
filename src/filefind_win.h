@@ -13,6 +13,7 @@
 
 
 
+#include <stdint.h>
 #include <windows.h>
 #include "list.h"
 
@@ -30,8 +31,8 @@
 struct FileData_ {
 	
 	char *strFilePath;
-	unsigned long long int fileSize;
-	unsigned int fileAttribute;
+	uint64_t fileSize;
+	uint32_t fileAttribute;
 	
 };
 typedef struct FileData_ FileData;
@@ -47,7 +48,7 @@ int file_buildFileList(const char *strDirectoryPath, List **outFileList);
 
 /* returns 1 if safe, 0 if unsafe file attribute */
 
-int file_isFileWritable(unsigned int fileAttribute);
+int file_isFileWritable(uint32_t fileAttribute);
 
 
 

@@ -13,6 +13,8 @@
 
 
 
+#include <stdint.h>
+
 
 #define ERROR_READ					2
 #define ERROR_WRITE					3
@@ -21,33 +23,33 @@
 
 
 struct inv_stat_ {
-	unsigned int totalFiles;
-	unsigned int processedFiles;
-	unsigned long long int byteProcessed;
-	unsigned long long int byteEncountered;
+	uint32_t totalFiles;
+	uint32_t processedFiles;
+	uint64_t byteProcessed;
+	uint64_t byteEncountered;
 };
 
-typedef struct inv_stat_ InversionStat;
+typedef struct inv_stat_ InvStat;
 
 
 
 
 
-long int fsbininv_setStartPosition(FILE *pFile, unsigned long long int fileSize, unsigned int skipPercent);
+int fsbininv_setStartPosition(FILE *pFile, uint64_t fileSize, unsigned int skipPercent);
 
-int fsbininv_invertFileBits(char *buffer, unsigned int buf_size, FILE *pFile, InversionStat *invStat);
-
-
-
-double stat_pctgFailedFiles(const InversionStat *invStat);
-
-double stat_pctgByteProcessed(const InversionStat *invStat);
+int fsbininv_invertFileBits(char *buffer, unsigned int buf_size, FILE *pFile, InvStat *invStat);
 
 
 
-void util_alignFileSize(unsigned long long int fileSize, char *outFileSizeBuffer);
+double stat_pctgFailedFiles(const InvStat *invStat);
 
-void util_alignStreamSize(unsigned long long int strmSize, char *outStrmSizeBuffer);
+double stat_pctgByteProcessed(const InvStat *invStat);
+
+
+
+void util_alignFileSize(uint64_t fileSize, char *outFileSizeBuffer);
+
+void util_alignStreamSize(uint64_t strmSize, char *outStrmSizeBuffer);
 
 
 

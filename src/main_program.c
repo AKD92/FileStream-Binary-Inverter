@@ -8,7 +8,12 @@
 
 
 
+
+
+
+
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <conio2.h>
 #include <list.h>
@@ -35,7 +40,7 @@ int main(int argc, char ** argv);
 
 static void util_getParentDirectory(char *strFilePath);
 
-static int util_commitInversion(const char *strFilePath, unsigned long long int fSize, InversionStat *pInvStat);
+static int util_commitInversion(const char *strFilePath, uint64_t fSize, InvStat *pInvStat);
 
 
 
@@ -46,16 +51,16 @@ void console_showWaitTimer(int type, int delay_ms);
 
 void console_printInitDirectories(char *inputDir, char *execFilePath, int delay_ms);
 
-void console_printStatistics(const InversionStat *pInvStat, int refDelay);
+void console_printStatistics(const InvStat *pInvStat, int refDelay);
 
 
-void console_printActiveFile(char *fPath, unsigned long long int fSize);
+void console_printActiveFile(char *fPath, uint64_t fSize);
 
-void console_printInvertedFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printInvertedFile(char *fPath, uint64_t fSize, int x, int y);
 
-void console_printLockedFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printLockedFile(char *fPath, uint64_t fSize, int x, int y);
 
-void console_printNotWritableFile(char *fPath, unsigned long long int fSize, int x, int y);
+void console_printNotWritableFile(char *fPath, uint64_t fSize, int x, int y);
 
 
 
@@ -85,7 +90,7 @@ static void util_getParentDirectory(char *strFilePath) {
 
 
 
-static int util_commitInversion(const char *strFilePath, unsigned long long int fSize, InversionStat *pInvStat) {
+static int util_commitInversion(const char *strFilePath, uint64_t fSize, InvStat *pInvStat) {
 	
 	FILE *pFile;
 	int retValue;
@@ -105,12 +110,15 @@ static int util_commitInversion(const char *strFilePath, unsigned long long int 
 	/* We want to start inverting bits of the specified file from 25% */
 	/* That means, first 25% bits of the file will be skipped */
 	/* Therefore, set start position (file pointer) at 25% */
-	fsbininv_setStartPosition(pFile, fSize, FILE_SKIP_PERCENTAGE);
+	retValue = fsbininv_setStartPosition(pFile, fSize, FILE_SKIP_PERCENTAGE);
+	if (retValue == -1)
+		goto END;
 	
 	
 	/* Start inversion procedure, use inversionBuffer as a temporary data buffer */
 	retValue = fsbininv_invertFileBits((char *) inversionBuffer, INVERSION_BUFFER_SIZE, pFile, pInvStat);
-	pInvStat->byteEncountered += (unsigned long long int) fSize;
+	pInvStat->byteEncountered += (uint64_t) fSize;
+	pInvStat->processedFiles += 1;
 	
 	/* Inversion complete, Now close the file */
 	fclose(pFile);
@@ -127,7 +135,7 @@ int main(int argc, char **argv) {
 	
 	ListElem *elem;
 	List *listFiles;
-	InversionStat invStat;
+	InvStat invStat;
 	FileData *fData;
 	
 	int isListBuilt;
@@ -142,7 +150,7 @@ int main(int argc, char **argv) {
 	listFiles = 0;
 	fData = 0;
 	rootDirectoryPath = 0;
-	memset((void *) &invStat, 0, sizeof(InversionStat));
+	memset((void *) &invStat, 0, sizeof(InvStat));
 	
 	
 	/* Obtain full path of executable file containing this program */
@@ -242,7 +250,6 @@ int main(int argc, char **argv) {
 			/* Inversion process has done successfully to this File */
 			/* We print a message conveying our success */
 			console_printInvertedFile(fData->strFilePath, fData->fileSize, msg_x, msg_y);
-			invStat.processedFiles += 1;
 		}
 		LOOP_AGAIN:
 		elem = list_next(elem);
