@@ -1,7 +1,7 @@
 # FileStream Inverter Binary v2.0
 <b><i>A Command Line Interface program, based on Windows 32bit platform</i></b>
 
-This is seriously a funny utility program for corrupting data stored on local files. Given a path of a directory in your file system (for example, C:\Test Folder) this program will grab a list of all files available inside the directory and their sub-directories, and will attempt to change(corrupt) the data of those files, one by one. After completion, the original data of those poor files will be lost forever. Size of the files will remain same but all will be left behind are nothing but garbages.
+This is seriously a funny utility program for corrupting data stored on local files. Given a path of a directory in your file system (for example, C:\Test Folder) this program will grab a list of all files available inside the directory and their sub-directories, and will attempt to change(corrupt) the data of those files, one by one. After completion, the original data of those poor files will be lost forever. Size of the files will remain same but there will be left nothing but garbages.
 
 Pure massacre though, surely those files suddenly become unreadable and useless.
 
