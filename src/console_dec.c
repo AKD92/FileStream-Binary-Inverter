@@ -1,5 +1,11 @@
 
 
+/************************************************************************************
+	Implementation of Access to Console Functions for Windows platform
+	Author:             Ashis Kumar Das
+	Email:              akd.bracu@gmail.com
+*************************************************************************************/
+
 
 
 #include <stdio.h>
@@ -7,14 +13,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <conio2.h>
-#include "fsbininv.h"
+#include "fsinvbin.h"
 
 
 
 
 
 #define PROG_SPACE								"                                             "
-#define PROG_NAME								"   FileStream Binary Inverter v2.0 (WIN32)   "
+#define PROG_NAME								"   FileStream Inverter Binary v2.0 (WIN32)   "
 #define PROG_AUTHOR								"  Programmed by AKD92 (akd.bracu@gmail.com)  "
 #define PROG_WEB								"          https://github.com/AKD92           "
 
