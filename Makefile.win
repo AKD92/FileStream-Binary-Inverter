@@ -1,15 +1,15 @@
-# Project: Filestream Binary Inverter
+# Project: FileStream Inverter Binary V2 (CLI Project)
 # Makefile created by Dev-C++ 5.11
 
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = obj/filefind_win.o obj/main_program.o obj/fsbininv.o obj/console_dec.o
-LINKOBJ  = obj/filefind_win.o obj/main_program.o obj/fsbininv.o obj/console_dec.o
+OBJ      = obj/console_dec.o obj/fsinvbin.o obj/fsys_crawler_win.o obj/main_program.o
+LINKOBJ  = obj/console_dec.o obj/fsinvbin.o obj/fsys_crawler_win.o obj/main_program.o
 LIBS     = -L"C:/Dev-Cpp/MinGW64/lib32" -L"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib32" -static-libgcc -L"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/lib" -L"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/lib" -llinkedlist -lconio -m32 -s
 INCS     = -I"C:/Dev-Cpp/MinGW64/include" -I"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
 CXXINCS  = -I"C:/Dev-Cpp/MinGW64/include" -I"C:/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++" -I"G:/Ashish Files/documents/Dev C++ Project Files/Linked List/src" -I"G:/Ashish Files/documents/Dev C++ Project Files/conio21 C Library (libconio.a)/src"
-BIN      = bin/fsbinv.exe
+BIN      = bin/fstm_inv_bnry.exe
 CXXFLAGS = $(CXXINCS) -ansi -m32 -std=c99 -Wall
 CFLAGS   = $(INCS) -ansi -m32 -std=c99 -Wall
 RM       = rm.exe -f
@@ -24,14 +24,14 @@ clean: clean-custom
 $(BIN): $(OBJ)
 	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
 
-obj/filefind_win.o: src/filefind_win.c
-	$(CC) -c src/filefind_win.c -o obj/filefind_win.o $(CFLAGS)
+obj/console_dec.o: src/console_dec.c
+	$(CC) -c src/console_dec.c -o obj/console_dec.o $(CFLAGS)
+
+obj/fsinvbin.o: src/fsinvbin.c
+	$(CC) -c src/fsinvbin.c -o obj/fsinvbin.o $(CFLAGS)
+
+obj/fsys_crawler_win.o: src/fsys_crawler_win.c
+	$(CC) -c src/fsys_crawler_win.c -o obj/fsys_crawler_win.o $(CFLAGS)
 
 obj/main_program.o: src/main_program.c
 	$(CC) -c src/main_program.c -o obj/main_program.o $(CFLAGS)
-
-obj/fsbininv.o: src/fsbininv.c
-	$(CC) -c src/fsbininv.c -o obj/fsbininv.o $(CFLAGS)
-
-obj/console_dec.o: src/console_dec.c
-	$(CC) -c src/console_dec.c -o obj/console_dec.o $(CFLAGS)
