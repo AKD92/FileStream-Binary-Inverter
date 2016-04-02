@@ -12,7 +12,7 @@ Later I realized that only doing harm will be no fun. I should devise a methodol
 
 ## Screenshots
 
-<img align="right" width="500px" height="298" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fstmScreen01.png">
+<img align="right" width="500px" height="298" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fstmScreen02.png">
 <br>1) The application was started on a specified directory</br>
 
 
