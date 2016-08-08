@@ -18,12 +18,12 @@ Later I realized that only doing harm will be no fun. I should devise a methodol
 <ul>
 <li><b>
 <a href="https://github.com/AKD92/FileStream-Inverter-Binary-V2-CLI-Win32/raw/master/bin/fstm_inv_bnry.exe">
-Standalone Executable (Win32)
+Standalone Executable (Win32)</a>
 <br>
-Compiled using <a href="http://www.mingw.org/">MinGW GCC 4.8.1
+Compiled using <a href="http://www.mingw.org/">MinGW GCC 4.8.1</a>
 </b></li>
 <li><b>
-<a href="src">Browse for Source Codes
+<a href="src">Browse for Source Codes</a> on GitHub
 </b></li>
 </ul>
 
