@@ -21,7 +21,7 @@ If this program is run over a large amount of files and folders, the end result 
 
 <h3>Background History behind this massacre</h3>
 <p align="justify">
-When I first created this stupid program, I was temptated to silently cheat with some of my friends in the university, destroying their favourite stupid things on their computers. I was in a hurry and I wrote the first version of this program in Java within a short time. It was only capable of polluting, no way to fix those at all.
+When I first created this stupid program, I was temptated to silently cheat with some of my friends in the university, destroying their favourite stupid things on their computers. I was in a hurry and I wrote the first version of this program in Java within a short time. It was only capable of damaging, no way to fix those damages at all.
 </p>
 
 <p align="justify">
