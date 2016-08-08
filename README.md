@@ -1,6 +1,6 @@
 
 <h1>FileStream Inverter Binary v2.0</h1>
-<h4><i>A malicious program targeted to damage & destroy disk files...</i></h4>
+<h3><i>A malicious program targeted to damage & destroy disk files...</i></h3>
 
 <br>
 <img align="right" width="500px" height="298px" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fstmScreen02.png">
