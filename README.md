@@ -14,5 +14,18 @@ When I first created this stupid program, I was temptated to silently cheat with
 
 Later I realized that only doing harm will be no fun. I should devise a methodology so that there will be a way to bring back the original contents of those poor files, revert the damage, quickly and painlessly. Therefore I changed the corruption algorithm entirely without losing its strength, and so here is the second version rewritten entirely in C with full revert capability.
 
-### License
+<h3>Download</h3>
+<ul>
+<li><b>
+<a href="https://github.com/AKD92/FileStream-Inverter-Binary-V2-CLI-Win32/raw/master/bin/fstm_inv_bnry.exe">
+Standalone Executable (Win32)
+<br>
+Compiled using <a href="http://www.mingw.org/">MinGW GCC 4.8.1
+</b></li>
+<li><b>
+<a href="src">Browse for Source Codes
+</b></li>
+</ul>
+
+<h3>License</h3>
 <a rel="license" href="http://www.gnu.org/licenses/gpl-3.0-standalone.html"><img alt="GPLv3 License" style="border-width:0" src="http://www.gnu.org/graphics/gplv3-127x51.png" /></a><br />This software is licensed under <a rel="license" href="http://www.gnu.org/licenses/gpl-3.0-standalone.html">GNU General Public License, Version 3</a>.
