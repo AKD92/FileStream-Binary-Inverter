@@ -1,8 +1,8 @@
 
 <h1>FileStream Inverter Binary v2.0</h1>
+<h4><i>A malicious program targeted to damage & destroy disk files...</i></h4>
 
-<h3><i>A malicious program targeted to damage & destroy disk files...</i></h3>
-
+<br>
 <img align="right" width="500px" height="298px" src="https://github.com/AKD92/FileStream-Binary-Inverter/raw/master/fstmScreen02.png">
 
 This is a malicious program intended to do harm, but actually it is not so harmful at all. Given a path of a directory in your file system (for example, C:\Test Folder) this program will grab a list of all files available inside the directory and their sub-directories, and will attempt to alter (damage) the data of those files, one by one. Upon completion the altered files will no longer contain their original data. Size of the files will remain same as before but inside of those files are pure garbage.
